@@ -61,3 +61,32 @@ print("  outputs/altitude_truth_vs_sensors.png", flush=True)
 print("  outputs/velocity_truth_vs_gps.png", flush=True)
 print("  outputs/accel_truth_vs_imu.png", flush=True)
 print("Program exiting.", flush=True)
+
+plt.figure()
+plt.plot(df["t"], df["truth_z"], label="truth_z")
+plt.plot(df["t"], df["baro_alt"], label="baro_alt")
+plt.plot(df["t"], df["est_z"], label="est_z")
+
+gps_df = df[df["gps_fix"] == True]
+plt.plot(gps_df["t"], gps_df["gps_alt"], marker="o", linestyle="None", label="gps_alt")
+
+plt.xlabel("t (s)")
+plt.ylabel("altitude (m)")
+plt.title("Altitude: Truth vs Sensors vs KF Estimate")
+plt.legend()
+plt.savefig(out_dir / "altitude_with_kf.png", dpi=150, bbox_inches="tight")
+plt.close()
+
+plt.figure()
+plt.plot(df["t"], df["truth_v"], label="truth_v")
+plt.plot(df["t"], df["est_v"], label="est_v")
+plt.plot(gps_df["t"], gps_df["gps_v"], marker="o", linestyle="None", label="gps_v")
+
+plt.xlabel("t (s)")
+plt.ylabel("vertical velocity (m/s)")
+plt.title("Velocity: Truth vs GPS vs KF Estimate")
+plt.legend()
+plt.savefig(out_dir / "velocity_with_kf.png", dpi=150, bbox_inches="tight")
+plt.close()
+
+

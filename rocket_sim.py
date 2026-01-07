@@ -1,5 +1,5 @@
 import pandas as pd
-
+from kalman_1d import KalmanFilter1D
 from sensors import IMUAccelModel, BaroAltModel, GPSModel
 
 
@@ -19,6 +19,7 @@ def run_sim(dt=0.01, t_max=30.0):
     imu = IMUAccelModel()
     baro = BaroAltModel()
     gps = GPSModel()
+    kf = KalmanFilter1D(z0=0.0, v0=0.0)
 
     t = 0.0
     z = 0.0
@@ -53,6 +54,12 @@ def run_sim(dt=0.01, t_max=30.0):
         baro_alt = baro.measure(z_true=z, dt=dt)
         gps_fix, gps_alt, gps_v = gps.measure(t=t, z_true=z, v_true=v)
 
+        # --- Kalman filter ---
+        kf.predict(a_meas=imu_accel, dt=dt)
+        kf.update_baro(z_baro=baro_alt)
+        if gps_fix:
+            kf.update_gps(z_gps=gps_alt, v_gps=gps_v)
+
         # Integrate (semi-implicit Euler)
         v = v + a * dt
         z = z + v * dt
@@ -80,6 +87,8 @@ def run_sim(dt=0.01, t_max=30.0):
             "gps_fix": gps_fix,
             "gps_alt": gps_alt,
             "gps_v": gps_v,
+            "est_z": kf.z,
+            "est_v": kf.v,
         })
 
         t += dt
